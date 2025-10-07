@@ -1,6 +1,6 @@
 "use client";
 import { redirect } from "next/navigation";
-import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardTitle, CardHeader, CardFooter } from "@/components/ui/card";
 import { InfoIcon } from "lucide-react";
 import { FetchDataSteps } from "@/components/tutorial/fetch-data-steps";
 import Box from '@mui/material/Box'
@@ -181,11 +181,16 @@ export default function ProtectedPage() {
         <Card key={query.scrape_id}>
           <CardHeader>
             <CardTitle>
-              <Link key={query.scrape_id} href={`protected/results/${query.scrape_id}`}>Results for {query.scrape_id}</Link>
+              <div className="flex justify-between items-center w-full">
+              <Link key={query.scrape_id} href={`protected/results/${query.scrape_id}`}>Results for query {query.scrape_id}</Link>
+              <pre className="bg-muted/20 p-3 rounded text-xs">Created at: {query.created_at}</pre>
+              </div>
              </CardTitle>
           </CardHeader>
-          <CardContent>
-              <div>{query.location}</div>
+          <CardFooter>
+          <details className="w-full">
+              <summary>Input Arguments</summary>
+              <div>Location: {query.location}</div>
               {query.keyword&&<div>Keyword: {query.keyword}</div>}
               {query.company&&<div>Company: {query.company}</div>}
               {query.country&&<div>Country: {query.country}</div>}
@@ -194,7 +199,8 @@ export default function ProtectedPage() {
               {query.experience_level&&<div>Experience level: {query.experience_level}</div>}
               {query.remote&&<div>Remote: {query.remote}</div>}
               {query.location_radius&&<div>Location radius: {query.location_radius}</div>}
-          </CardContent>
+          </details>
+          </CardFooter>
         </Card>
         </div>
       ))}
