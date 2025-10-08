@@ -70,6 +70,8 @@ export default function ProtectedPage() {
       },
     });
     console.log(error, data);
+    document.getElementById('query_filters')?.reset();
+    setNumInputs('');
   };
 
   if (loading) return <div>Loading queries...</div>
