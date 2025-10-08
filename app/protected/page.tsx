@@ -20,6 +20,7 @@ export default function ProtectedPage() {
   const [remote, setRemote] = useState('');
   const [company, setCompany] = useState('');
   const [location_radius, setLocationRadius] = useState('');
+  const [numInputs, setNumInputs] = useState('');
   const [queries, setQueries] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -60,6 +61,7 @@ export default function ProtectedPage() {
         remote,
         company,
         location_radius,
+        num_requested: numInputs,
       }
     const { error, data } = await supabase.functions.invoke("trigger_scrape_api", {
       method: "POST",
@@ -169,7 +171,17 @@ export default function ProtectedPage() {
               <input id="selective_search" type="checkbox" name="selective_search" onChange={e=>setSelectiveSearch(e.target.checked)}/>
             </div>
 
-            <div className="field action">
+            <div className="field small">
+              <label htmlFor="numInputs" style={{display: 'block', textAlign:'center',fontSize: 14, marginBottom: 4}}>
+                Jobs per query
+                <span style={{display: 'block', fontSize: 12, color: '#6b7280', fontWeight: 400, marginTop: 2}}>(default: 1)</span>
+              </label>
+              <input style={{textAlign:'center'}} id="numInputs" type="number" name="numInputs" min={1} max={10} value={numInputs === '' ? '' : numInputs} onChange={(e)=>{
+                  setNumInputs(e.target.value==''?'':parseInt(e.target.value));
+                }}/>
+            </div>
+
+            <div className="field">
               <button type="submit" className="discover">Discover</button>
             </div>
           </div>
@@ -187,10 +199,14 @@ export default function ProtectedPage() {
               </div>
              </CardTitle>
           </CardHeader>
+          <CardContent>
+            <div>No. of jobs fetched: {query.num_results}</div>
+          </CardContent>
           <CardFooter>
           <details className="w-full">
               <summary>Input Arguments</summary>
               <div>Location: {query.location}</div>
+              <div>No. of jobs requested: {query.num_requested}</div>
               {query.keyword&&<div>Keyword: {query.keyword}</div>}
               {query.company&&<div>Company: {query.company}</div>}
               {query.country&&<div>Country: {query.country}</div>}

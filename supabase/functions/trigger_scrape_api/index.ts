@@ -33,6 +33,7 @@ Deno.serve(async (req) => {
       remote,
       company,
       location_radius,
+      num_requested
     } = body;
     console.log("Request body:", body)
     const input_json = {}
@@ -50,7 +51,7 @@ Deno.serve(async (req) => {
     console.log(input_json)
     // Trigger BrightData scrape
     const bd_response = await fetch(
-      "https://api.brightdata.com/datasets/v3/trigger?dataset_id=gd_lpfll7v5hcqtkxl6l&endpoint=https%3A%2F%2Faffrofwhuqporiyygjbd.supabase.co%2Ffunctions%2Fv1%2Fcollection_webhook&format=json&uncompressed_webhook=true&include_errors=true&type=discover_new&discover_by=keyword&limit_per_input=1",
+      `https://api.brightdata.com/datasets/v3/trigger?dataset_id=gd_lpfll7v5hcqtkxl6l&endpoint=https%3A%2F%2Faffrofwhuqporiyygjbd.supabase.co%2Ffunctions%2Fv1%2Fcollection_webhook&format=json&uncompressed_webhook=true&include_errors=true&type=discover_new&discover_by=keyword&limit_per_input=${num_requested===''?1:num_requested}`,
       {
         method: "POST",
         headers: {
@@ -86,6 +87,7 @@ Deno.serve(async (req) => {
     const { data, error } = await supabase.from("Query").insert({
       ...input_json,
       scrape_id: data_results.snapshot_id!,
+      num_requested: num_requested===''?1:num_requested,
       status: "running",
     });
 

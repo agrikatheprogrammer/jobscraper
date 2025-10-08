@@ -19,6 +19,7 @@ Deno.serve(async (req) => {
       },
     })
   }
+  const insertedRows=[]
   try{
     // BrightData sends snapshot_id header to identify the scrape
     const scrape_id=req.headers.get("snapshot-id")||'';
@@ -32,7 +33,6 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")?? '',
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?? '',
     )
-    const insertedRows=[]
     for (const r of results) {
       const normalize = (val) => (val === undefined ? null : val);
       const insertjson={      
@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
     } 
     await supabase
       .from("Query")
-      .update({ status: "ready" })
+      .update({ status: "ready", num_results: results.length == 0 ? 0: results.length })
       .eq("scrape_id", scrape_id);
   } catch (e) {
     return new Response(JSON.stringify({ error: e.message }), {
