@@ -43,7 +43,8 @@ export default async function Results({ params }: ResultsPageProps) {
   const { data: jobs, error: jerror } = await supabase
     .from("Job")
     .select("*")
-    .eq("scrape_id", scrape_id);
+    .eq("scrape_id", scrape_id)
+    .order('job_posted_date', { ascending: false });
 
   if (jerror) {
     return <div>Error: {jerror.message}</div>;
