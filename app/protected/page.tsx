@@ -20,7 +20,7 @@ export default function ProtectedPage() {
   const [remote, setRemote] = useState('');
   const [company, setCompany] = useState('');
   const [location_radius, setLocationRadius] = useState('');
-  const [numInputs, setNumInputs] = useState('');
+  const [numInputs, setNumInputs] = useState(1);
   const [queries, setQueries] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -172,12 +172,9 @@ export default function ProtectedPage() {
             </div>
 
             <div className="field small">
-              <label htmlFor="numInputs" style={{display: 'block', textAlign:'center',fontSize: 14, marginBottom: 4}}>
-                Jobs per query
-                <span style={{display: 'block', fontSize: 12, color: '#6b7280', fontWeight: 400, marginTop: 2}}>(default: 1)</span>
-              </label>
-              <input style={{textAlign:'center'}} id="numInputs" type="number" name="numInputs" min={1} max={10} value={numInputs === '' ? '' : numInputs} onChange={(e)=>{
-                  setNumInputs(e.target.value==''?'':parseInt(e.target.value));
+              <label htmlFor="numInputs">Jobs per query <span className='xs'>(default:1)</span></label>
+              <input style={{textAlign:'center'}} id="numInputs" type="number" name="numInputs" min={1} max={10} value={numInputs === null ? '' : numInputs} onChange={(e)=>{
+                  setNumInputs(e.target.value==''?null:parseInt(e.target.value));
                 }}/>
             </div>
 
