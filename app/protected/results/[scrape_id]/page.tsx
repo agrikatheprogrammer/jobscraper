@@ -3,13 +3,24 @@ import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 function formatDate(input?: string | null) {
-    if (!input) return null;
-    try {
-        const d = new Date(input);
-        return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-    } catch {
-        return input;
-    }
+  if (!input) return null;
+  try {
+    const d = new Date(input);
+    const datePart = d.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+    const timePart = d.toLocaleTimeString(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false, // set to true for AM/PM
+    });
+    return `${datePart} ${timePart}`; // just a space, no comma
+  } catch {
+    return input;
+  }
 }
 
 function formatSalary(min?: number | null, max?: number | null, currency?: string | null) {
@@ -85,22 +96,22 @@ export default async function Results({ params }: ResultsPageProps) {
 
                             <div className="flex-1 min-w-0">
                             <Link href={detailHref} className="text-lg font-semibold leading-tight">{job.job_title}</Link>
-                            <CardTitle className="text-sm font-semibold mt-1">
-                                <div className="truncate text-inherit block">
-                                {job_summary ? job_summary.split("\n")[0] : url}
+                            <CardTitle className="line-clamp-5 text-sm font-semibold mt-1">
+                                <div className="text-inherit block">
+                                {job_summary ? job_summary : url}
                                 </div>
                             </CardTitle>
                             <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-2">
-                                {company_name && <span className="px-2 py-0.5 rounded-md bg-muted/60">{company_name}</span>}
+                                {company_name && <span className="py-0.5 rounded-md bg-muted/60">{company_name}</span>}
                                 {job_location && <span className="px-2 py-0.5 rounded-md bg-muted/60">{job_location}</span>}
                                 {job_employment_type && <span className="px-2 py-0.5 rounded-md bg-muted/60">{job_employment_type}</span>}
                                 {job_seniority_level && <span className="px-2 py-0.5 rounded-md bg-muted/60">{job_seniority_level}</span>}
                             </div>
                             </div>
 
-                            <div className="text-right text-xs text-muted-foreground">
+                            <div className="text-xs text-muted-foreground">
                             {date && <div>{date}</div>}
-                            {salary && <div className="mt-1">{salary}</div>}
+                            {salary && <div className="mt-1 mb-1">{salary}</div>}
                             </div>
                         </CardHeader>
 
