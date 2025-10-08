@@ -65,7 +65,8 @@ export default async function JobPage({params}: JobPageProps) {
                     </div>
                     <div className="text-sm text-muted-foreground">
                         <div>Applicants: {job.job_num_applicants ?? '—'}</div>
-                        <div className="mt-1">Application Availability: {availability}</div>
+                        {job.application_availability&&<div className="mt-1">Application Availability: {job.application_availability==true?'true':'false'}</div>}
+                        {!job.application_availability&&<div className="mt-1">Application Availability: Unknown</div>}
                     </div>
                 </CardHeader>
 
