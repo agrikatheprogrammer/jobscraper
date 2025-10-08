@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-
+import JobSummary from "@/app/protected/components/JobSummary";
 function formatDate(input?: string | null) {
   if (!input) return null;
   try {
@@ -21,14 +21,6 @@ function formatDate(input?: string | null) {
   } catch {
     return input;
   }
-}
-
-function formatSalary(min?: number | null, max?: number | null, currency?: string | null) {
-    if (min == null && max == null) return null;
-    const c = currency || '';
-    if (min != null && max != null) return `${c}${min.toLocaleString()} - ${c}${max.toLocaleString()}`;
-    if (min != null) return `${c}${min.toLocaleString()}+`;
-    return `${c}${(max ?? 0).toLocaleString()}`;
 }
 
 interface ResultsPageProps {
@@ -63,17 +55,19 @@ export default async function Results({ params }: ResultsPageProps) {
                     job_summary,
                     job_location,
                     job_employment_type,
+                    job_base_pay_range,
+                    job_num_applicants,
                     job_seniority_level,
                     job_posted_date,
                     min_amount,
                     max_amount,
                     currency,
                     apply_link,
+                    job_title,
                     url,
                 } = job;
 
                 const date = formatDate(job_posted_date);
-                const salary = formatSalary(min_amount, max_amount, currency);
                 const detailHref = job_posting_id
                     ? `/protected/jobs/${encodeURIComponent(job_posting_id)}`
                     : url
@@ -82,26 +76,22 @@ export default async function Results({ params }: ResultsPageProps) {
 
                 return (
                     <Card key={job_posting_id} className="overflow-hidden">
-                        <CardHeader className="flex items-start gap-4 pb-0">
-                            <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center overflow-hidden">
-                            {company_logo ? (
-                                <img
-                                src={company_logo}
-                                alt={`${company_name || "company"} logo`}
-                                className="h-full w-full object-contain"
-                                />
-                            ) : (
-                                <div className="text-xs text-muted-foreground px-2">No logo</div>
-                            )}
-                            </div>
-
-                            <div className="flex-1 min-w-0">
-                            <Link href={detailHref} className="text-lg font-semibold leading-tight">{job.job_title}</Link>
-                            <CardTitle className="line-clamp-5 text-sm font-semibold mt-1">
-                                <div className="text-inherit block">
-                                {job_summary ? job_summary : url}
+                        <CardHeader className="flex items-start gap-2 pb-0">
+                            <div className='flex flex-row gap-4 items-center'>
+                                <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center overflow-hidden">
+                                {company_logo ? (
+                                    <img
+                                    src={company_logo}
+                                    alt={`${company_name || "company"} logo`}
+                                    className="h-full w-full object-contain"
+                                    />
+                                ) : (
+                                    <div className="text-xs text-muted-foreground px-2">No logo</div>
+                                )}
                                 </div>
-                            </CardTitle>
+                                <Link href={detailHref} className="text-lg font-semibold leading-tight">{job_title}</Link>
+                            </div>
+                            <div className="flex-1 min-w-0">
                             <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-2">
                                 {company_name && <span className="py-0.5 rounded-md bg-muted/60">{company_name}</span>}
                                 {job_location && <span className="px-2 py-0.5 rounded-md bg-muted/60">{job_location}</span>}
@@ -110,16 +100,14 @@ export default async function Results({ params }: ResultsPageProps) {
                             </div>
                             </div>
 
-                            <div className="text-xs text-muted-foreground">
+                            <div className="text-xs text-black">
                             {date && <div>{date}</div>}
-                            {salary && <div className="mt-1">{salary}</div>}
+                            {job.job_base_pay_range && <div className="mt-1">{job_base_pay_range}</div>}
                             </div>
                         </CardHeader>
 
                         <CardContent>
-                            <p className="text-sm text-foreground/90 mb-3 line-clamp-3">
-                            {job_summary || "No description available."}
-                            </p>
+                            <JobSummary job_summary={job_summary?job_summary:''} url={url?url:''} />
                             <div className="flex items-center justify-between gap-2">
                             <div className="flex gap-2 text-sm">
                                 {apply_link ? (
@@ -129,7 +117,7 @@ export default async function Results({ params }: ResultsPageProps) {
                                 ) : null}
                             </div>
                             <div className="text-xs text-muted-foreground">
-                                Applicants: {job.job_num_applicants ?? "—"}
+                                Applicants: {job_num_applicants ?? "—"}
                             </div>
                             </div>
                         </CardContent>
