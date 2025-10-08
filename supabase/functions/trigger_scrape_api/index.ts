@@ -36,6 +36,13 @@ Deno.serve(async (req) => {
       num_requested
     } = body;
     console.log("Request body:", body)
+
+     const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""  // MUST be service role
+    );
+
+
     const input_json = {}
     if (location) input_json.location = location;
     if (keyword) input_json.keyword = keyword;
@@ -47,8 +54,11 @@ Deno.serve(async (req) => {
     if (remote) input_json.remote = remote;
     if (company) input_json.company = company;
     if (location_radius) input_json.location_radius = location_radius;
-    const input_json_array = [input_json];
-    console.log(input_json)
+    const {data:datafromjob,error:errorfromjob}=await supabase.from('Job').select("job_posting_id");
+    const jobs_to_not_include=datafromjob?.map(j=>j.job_posting_id)||[];
+    const bodytosend={jobs_to_not_include,...input_json}
+    const input_json_array = [bodytosend];
+    console.log(bodytosend)
     // Trigger BrightData scrape
     const bd_response = await fetch(
       `https://api.brightdata.com/datasets/v3/trigger?dataset_id=gd_lpfll7v5hcqtkxl6l&endpoint=https%3A%2F%2Faffrofwhuqporiyygjbd.supabase.co%2Ffunctions%2Fv1%2Fcollection_webhook&format=json&uncompressed_webhook=true&include_errors=true&type=discover_new&discover_by=keyword&limit_per_input=${num_requested===''?1:num_requested}`,
@@ -58,7 +68,7 @@ Deno.serve(async (req) => {
           Authorization: `Bearer ${Deno.env.get("BRIGHTDATA_API_KEY")}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(input_json_array),
+        body: JSON.stringify(bodytosend),
       }
     );
 
@@ -75,11 +85,7 @@ Deno.serve(async (req) => {
 
 
     // Insert into Supabase
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""  // MUST be service role
-    );
-
+   
 
 
     const normalize = (val: any) => (val === undefined ? null : val);
