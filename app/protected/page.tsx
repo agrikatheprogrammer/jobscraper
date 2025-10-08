@@ -20,7 +20,7 @@ export default function ProtectedPage() {
   const [remote, setRemote] = useState('');
   const [company, setCompany] = useState('');
   const [location_radius, setLocationRadius] = useState('');
-  const [numInputs, setNumInputs] = useState(1);
+  const [numInputs, setNumInputs] = useState('');
   const [queries, setQueries] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -166,18 +166,32 @@ export default function ProtectedPage() {
               </select>
             </div>
 
-            <div className="field inline">
-              <label htmlFor="selective_search">Selective</label>
+            <div className="field inlin mb-2 mr-2">
+              <label style={{textAlign:'center'}} htmlFor="selective_search">Selective</label>
               <input id="selective_search" type="checkbox" name="selective_search" onChange={e=>setSelectiveSearch(e.target.checked)}/>
             </div>
 
             <div className="field small">
-              <label htmlFor="numInputs">Jobs per query <span className='xs'>(default:1)</span></label>
-              <input style={{textAlign:'center'}} id="numInputs" type="number" name="numInputs" min={1} max={10} value={numInputs === null ? '' : numInputs} onChange={(e)=>{
-                  setNumInputs(e.target.value==''?null:parseInt(e.target.value));
-                }}/>
+            <label htmlFor="numInputs">
+              Jobs per query
+            </label>
+            <input
+              id="numInputs"
+              type="number"
+              name="numInputs"
+              min={1}
+              max={10}
+              value={numInputs === null ? '' : numInputs}
+              onChange={(e) =>
+                setNumInputs(e.target.value === '' ? null : parseInt(e.target.value))
+              }
+              className="text-center border border-gray-300 rounded-md p-1 w-full 
+                        [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none 
+                        [&::-webkit-inner-spin-button]:appearance-none"
+            />
             </div>
 
+                
             <div className="field">
               <button type="submit" className="discover">Discover</button>
             </div>
