@@ -111,7 +111,7 @@ export default async function Results({ params }: ResultsPageProps) {
 
                             <div className="text-xs text-muted-foreground">
                             {date && <div>{date}</div>}
-                            {salary && <div className="mt-1 mb-1">{salary}</div>}
+                            {salary && <div className="mt-1">{salary}</div>}
                             </div>
                         </CardHeader>
 
