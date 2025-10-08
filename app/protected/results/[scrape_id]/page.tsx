@@ -42,7 +42,7 @@ export default async function Results({ params }: ResultsPageProps) {
     return <div className="text-sm text-muted-foreground">No jobs found.</div>;
   }
     return (
-        <div className="flex gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col gap-4">
             {jobs.map((job: any) => {
                 const {
                     job_posting_id,
