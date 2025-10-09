@@ -49,7 +49,6 @@ export default function ProtectedPage() {
     const {
     data: { session },
     } = await supabase.auth.getSession();
-    console.log(session)
     const payload={
         location,
         keyword,
