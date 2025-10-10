@@ -25,6 +25,7 @@ export default function ProtectedPage() {
   const [queries, setQueries] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [cansubmit,setCanSubmit]=useState(true)
   const router=useRouter();
   useEffect(() => {
     const fetchQueries = async () => {
@@ -74,17 +75,17 @@ export default function ProtectedPage() {
       activeChannel.unsubscribe();
     }
     const scraped_id=data.scrape_id
-    console.log(scraped_id)
     activeChannel = supabase.channel('custom-update-channel')
     .on(
       'postgres_changes',
       { event: 'UPDATE', schema: 'public', table: 'Query', filter: `scrape_id=eq.${scraped_id}` },
-      (payload) => {
-        console.log(payload)
-        router.push(`/protected/results/${payload.new.scrape_id}`) // navigate to most recent query results, keep it clogged as little as possible
+      () => {
+        setCanSubmit(true)
+        router.push(`/protected/results/${scraped_id}`) // navigate to most recent query results, keep it clogged as little as possible
       }
     )
     .subscribe()
+    setCanSubmit(false)
     document.getElementById('query_filters')?.reset();
     setNumInputs('');
   };
@@ -210,7 +211,7 @@ export default function ProtectedPage() {
 
                 
             <div className="field">
-              <button type="submit" className="discover">Discover</button>
+              <button type="submit" disabled={!cansubmit} className="discover">Discover</button>
             </div>
           </div>
         </form>

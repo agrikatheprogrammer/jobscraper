@@ -101,3 +101,7 @@ select::-moz-focus-inner {
   .field.action{ width: 100%; margin-left: 0; }
 }
 
+button:disabled {
+    cursor: not-allowed;      
+    opacity: 0.6;             
+}
