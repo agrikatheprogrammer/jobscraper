@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import JobSummary from "@/app/protected/components/JobSummary";
+
 function formatDate(input?: string | null) {
   if (!input) return null;
   try {

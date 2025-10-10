@@ -8,6 +8,7 @@ import Link from "next/link";
 import './styles.css'
 import { useState, useEffect } from 'react'
 import { createClient } from "@/lib/supabase/client";
+import {useRouter} from 'next/navigation';
 
 export default function ProtectedPage() {
   const [selective_search, setSelectiveSearch] = useState(false);
@@ -24,6 +25,7 @@ export default function ProtectedPage() {
   const [queries, setQueries] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const router=useRouter();
   useEffect(() => {
     const fetchQueries = async () => {
       try {
@@ -43,7 +45,7 @@ export default function ProtectedPage() {
 
     fetchQueries();
   }, []);
-
+  let activeChannel=null
   const startFetching = async () => {
     const supabase = await createClient();
     const {
@@ -62,13 +64,27 @@ export default function ProtectedPage() {
         location_radius,
         num_requested: numInputs,
       }
-    const { error, data } = await supabase.functions.invoke("trigger_scrape_api", {
+    const { error, data} = await supabase.functions.invoke("trigger_scrape_api", {
       method: "POST",
       body: payload,
       headers: { "Authorization": `Bearer ${session.access_token}`
       },
     });
-    console.log(error, data);
+    if (activeChannel) {
+      activeChannel.unsubscribe();
+    }
+    const scraped_id=data.scrape_id
+    console.log(scraped_id)
+    activeChannel = supabase.channel('custom-update-channel')
+    .on(
+      'postgres_changes',
+      { event: 'UPDATE', schema: 'public', table: 'Query', filter: `scrape_id=eq.${scraped_id}` },
+      (payload) => {
+        console.log(payload)
+        router.push(`/protected/results/${payload.new.scrape_id}`) // navigate to most recent query results, keep it clogged as little as possible
+      }
+    )
+    .subscribe()
     document.getElementById('query_filters')?.reset();
     setNumInputs('');
   };

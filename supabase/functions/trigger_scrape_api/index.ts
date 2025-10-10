@@ -83,11 +83,6 @@ Deno.serve(async (req) => {
       throw new Error(`BrightData returned invalid JSON: ${text.slice(0,200)}`);
     }
 
-
-    // Insert into Supabase
-   
-
-
     const normalize = (val: any) => (val === undefined ? null : val);
 
     const { data, error } = await supabase.from("Query").insert({
@@ -98,7 +93,7 @@ Deno.serve(async (req) => {
     });
 
     if (error) {console.log(error);throw error;}
-    return new Response(JSON.stringify(data), {
+    return new Response(JSON.stringify({scrape_id: data_results.snapshot_id!}), {
       headers: {
         "Access-Control-Allow-Origin": "*",  // <-- allow frontend
         "Content-Type": "application/json",
