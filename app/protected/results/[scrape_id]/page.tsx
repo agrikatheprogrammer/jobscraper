@@ -78,7 +78,7 @@ export default async function Results({ params }: ResultsPageProps) {
                 return (
                     <Card key={job_posting_id} className="overflow-hidden">
                         <CardHeader className="flex items-start gap-2 pb-0">
-                            <div className='flex flex-row gap-4 items-center'>
+                            <div className='flex flex-row gap-4 items-center w-full'>
                                 <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center overflow-hidden">
                                 {company_logo ? (
                                     <img
@@ -91,6 +91,7 @@ export default async function Results({ params }: ResultsPageProps) {
                                 )}
                                 </div>
                                 <Link href={detailHref} className="text-lg font-semibold leading-tight">{job_title}</Link>
+                                <input className="ml-auto" type="checkbox" readOnly />
                             </div>
                             <div className="flex-1 min-w-0">
                             <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-2">

@@ -80,12 +80,10 @@ export default function ProtectedPage() {
       'postgres_changes',
       { event: 'UPDATE', schema: 'public', table: 'Query', filter: `scrape_id=eq.${scraped_id}` },
       () => {
-        setCanSubmit(true)
         router.push(`/protected/results/${scraped_id}`) // navigate to most recent query results, keep it clogged as little as possible
       }
     )
     .subscribe()
-    setCanSubmit(false)
     document.getElementById('query_filters')?.reset();
     setNumInputs('');
   };
@@ -127,10 +125,10 @@ export default function ProtectedPage() {
               <label htmlFor="time_range">Time range</label>
               <select id="time_range" name="time_range" onChange={e=>setTimeRange(e.target.value)} defaultValue="">
                 <option value=""></option>
-                <option value="Anytime">Any time</option>
+                <option value="Any time">Any time</option>
                 <option value="Past 24 hours">Past 24 hours</option>
-                <option value="Past Week">Past week</option>
-                <option value="Past Month">Past month</option>
+                <option value="Past week">Past week</option>
+                <option value="Past month">Past month</option>
               </select>
             </div>
 
@@ -198,7 +196,7 @@ export default function ProtectedPage() {
               type="number"
               name="numInputs"
               min={1}
-              max={10}
+              max={100}
               value={numInputs === null ? '' : numInputs}
               onChange={(e) =>
                 setNumInputs(e.target.value === '' ? null : parseInt(e.target.value))

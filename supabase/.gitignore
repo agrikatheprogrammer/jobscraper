@@ -9,3 +9,5 @@ config.toml
 .env.*.local
 .env
 supabase/functions/.env
+/functions/.env
+*.env
