@@ -2,27 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import JobSummary from "@/app/protected/components/JobSummary";
-
-function formatDate(input?: string | null) {
-  if (!input) return null;
-  try {
-    const d = new Date(input);
-    const datePart = d.toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-    const timePart = d.toLocaleTimeString(undefined, {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false, // set to true for AM/PM
-    });
-    return `${datePart} ${timePart}`; // just a space, no comma
-  } catch {
-    return input;
-  }
-}
+import formatDate from '@/app/helpers/dateTimeFormatter.ts'
 
 interface ResultsPageProps {
   params: { scrape_id: string };

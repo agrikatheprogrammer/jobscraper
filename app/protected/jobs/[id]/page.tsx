@@ -1,21 +1,13 @@
 import Link from 'next/link';
 import {createClient} from "@/lib/supabase/server";
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
-
-function asString(v) {
-    if (!v) return '';
-    return Array.isArray(v) ? v[0] : v;
-}
-
-function formatDate(d) {
-    if (!d) return null;
-    try { return new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }); }
-    catch { return d; }
-}
+import formatDate from '@/app/helpers/dateTimeFormatter';
+import ApplyButton from '@/app/protected/components/ApplyButton'
 
 interface JobPageProps {
   params: { id: string };
 }
+
 
 export default async function JobPage({params}: JobPageProps) {
     const {id}=await params;
@@ -50,6 +42,7 @@ export default async function JobPage({params}: JobPageProps) {
                 <div className="flex flex-col items-end gap-3">
                     <div className="text-sm text-muted-foreground">Posted: {formatDate(job.job_posted_date)}</div>
                     <a href={job.apply_link || job.url} target="_blank" rel="noreferrer" className="inline-flex items-center px-4 py-2 rounded-md bg-primary text-primary-foreground">Apply</a>
+                    <ApplyButton url={job.apply_link || job.url} />
                 </div>
             </div>
 

@@ -9,6 +9,7 @@ import './styles.css'
 import { useState, useEffect } from 'react'
 import { createClient } from "@/lib/supabase/client";
 import {useRouter} from 'next/navigation';
+import formatDate from '@/app/helpers/dateTimeFormatter'
 
 export default function ProtectedPage() {
   const [selective_search, setSelectiveSearch] = useState(false);
@@ -27,6 +28,7 @@ export default function ProtectedPage() {
   const [error, setError] = useState<string | null>(null)
   const [cansubmit,setCanSubmit]=useState(true)
   const router=useRouter();
+  
   useEffect(() => {
     const fetchQueries = async () => {
       try {
@@ -196,7 +198,7 @@ export default function ProtectedPage() {
               type="number"
               name="numInputs"
               min={1}
-              max={100}
+              max={1000}
               value={numInputs === null ? '' : numInputs}
               onChange={(e) =>
                 setNumInputs(e.target.value === '' ? null : parseInt(e.target.value))
@@ -222,7 +224,7 @@ export default function ProtectedPage() {
             <CardTitle>
               <div className="flex justify-between items-center w-full">
               <Link key={query.scrape_id} href={`protected/results/${query.scrape_id}`}>Results for query {query.scrape_id}</Link>
-              <pre className="bg-muted/20 p-3 rounded text-xs">Created at: {query.created_at}</pre>
+              <pre className="bg-muted/20 p-3 rounded text-xs">Created at: {formatDate(query.created_at)}</pre>
               </div>
              </CardTitle>
           </CardHeader>
