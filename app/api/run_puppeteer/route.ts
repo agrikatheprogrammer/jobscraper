@@ -1,23 +1,31 @@
 import puppeteer from "puppeteer";
 import { NextResponse } from "next/server";
 
-export async function POST(req: Request) {
+let browserPromise: Promise<Browser> | null = null;
 
-  const { url, job_description } = await req.json(); // get url from request json body
-  const browser = await puppeteer.launch({ headless: false }); // launch puppeteer with headless mode in false, see visible browser
-  let page = (await browser.pages())[0] || await browser.newPage(); // if a tab is opened, use it, else open a new one
-  await page.goto(url, { waitUntil: "networkidle0" }); // navigate open page/frame to url requested
-
-//study : React ≥16, React attaches its own synthetic event handlers and caches values.
-  function reactSafeSetValue(field, val) {
-    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-        window.HTMLInputElement.prototype,
-        'value'
-    ).set;
-    nativeInputValueSetter.call(field, val);
-    field.dispatchEvent(new Event('input', { bubbles: true }));
+async function getBrowser() {
+  if (browserPromise) {
+    try {
+      const browser = await browserPromise;
+      if (browser.isConnected()) {
+        return browser;
+      } else {
+        console.log("Browser was closed, relaunching...");
+      }
+    } catch (err) {
+      console.log("Browser promise failed, relaunching...", err);
+    }
   }
+  // Launch a new browser if none exists or old one is closed
+  browserPromise = puppeteer.launch({ headless: false });
+  return browserPromise;
+}
 
+export async function POST(req: Request) {
+  const { url, job_description } = await req.json(); // get url from request json body
+  const browser = await getBrowser(); // launch puppeteer with headless mode in false, see visible browser
+  let page = await browser.newPage(); // open a new one: simplifies for multiple tabs per browser context
+  await page.goto(url, { waitUntil: "networkidle0" }); // navigate open page/frame to url requested
 
   async function exposeFunction(page:puppeteer.Page) {
     try {
@@ -31,10 +39,34 @@ export async function POST(req: Request) {
                 body: JSON.stringify({html, job_description})
             })
             const getaijson = await res.json();
+            console.log(getaijson)
             for (const item of getaijson) {
             const identifier = item.id || item.name;
             console.log(item)
             await page.evaluate(({ identifier, val }) => {
+            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+                    window.HTMLInputElement.prototype,
+                    "value"
+                )?.set;
+
+            const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
+                    window.HTMLTextAreaElement.prototype,
+                    "value"
+                )?.set;
+            //study : React ≥16, React attaches its own synthetic event handlers and caches values.
+            function reactSafeSetValue(field, val) {
+                const setter =
+                    field.tagName === "TEXTAREA"
+                    ? nativeTextAreaValueSetter
+                    : nativeInputValueSetter;
+
+                if (setter) setter.call(field, val);
+                else field.value = val;
+
+                field.dispatchEvent(new Event("input", { bubbles: true }));
+                field.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+
             // Try ID first
             let field = document.getElementById(identifier);
 
@@ -68,6 +100,10 @@ export async function POST(req: Request) {
                     field.value = val;
                     field.dispatchEvent(new Event('change', { bubbles: true }));
                 }
+            } else if (field.tagName === 'TEXTAREA') {
+                reactSafeSetValue(field, val ?? '');
+            } else if (field.type === 'text' || field.type === 'email') {
+                reactSafeSetValue(field,val??'')
             } else {
                 reactSafeSetValue(field, val ?? '');
             }
@@ -99,6 +135,11 @@ export async function POST(req: Request) {
   }
 
   await exposeFunction(page); // initial page exposed!!
+
+   page.on('domcontentloaded', async () => {
+    console.log('[domcontentloaded] re-exposing');
+    await exposeFunction(page);
+  });
   
   page.on("framenavigated", async () => { // navigated: reattach DOM listener
     console.log('navigated')
@@ -111,6 +152,7 @@ export async function POST(req: Request) {
     await newPage.waitForNavigation({ waitUntil: "domcontentloaded" }).catch(() => {});
     await exposeFunction(newPage);
     newPage.on("framenavigated", async () => await exposeFunction(newPage));
+    newPage.on("domcontentloaded", async () => await exposeFunction(newPage));
   });
 
   return NextResponse.json({ status: "browser opened, waiting for spacebar" });
