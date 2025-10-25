@@ -38,7 +38,8 @@ export async function POST(req: Request) {
                     "Authorization": `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY}`},
                 body: JSON.stringify({html, job_description})
             })
-            const getaijson = await res.json();
+            let getaijson = await res.json();
+            getaijson=getaijson.filter(element=>element.value)
             console.log(getaijson)
             for (const item of getaijson) {
             const identifier = item.id || item.name;
@@ -55,6 +56,7 @@ export async function POST(req: Request) {
                 )?.set;
             //study : React ≥16, React attaches its own synthetic event handlers and caches values.
             function reactSafeSetValue(field, val) {
+              field.focus()
                 const setter =
                     field.tagName === "TEXTAREA"
                     ? nativeTextAreaValueSetter
@@ -65,7 +67,29 @@ export async function POST(req: Request) {
 
                 field.dispatchEvent(new Event("input", { bubbles: true }));
                 field.dispatchEvent(new Event("change", { bubbles: true }));
+                field.blur()
             }
+
+            function reactSafeSetSelect(field: HTMLSelectElement, value: string) {
+              field.focus();
+              const nativeSetter = Object.getOwnPropertyDescriptor(
+                  HTMLSelectElement.prototype, "value"
+              )?.set;
+
+              if (nativeSetter) {
+                  nativeSetter.call(field, value);
+                  console.log('native callledd')
+              } else {
+                  field.value = value;
+              }
+
+              // Dispatch events that React listens for
+              const event = new Event('input', { bubbles: true });
+              field.dispatchEvent(event);
+              const changeEvent = new Event('change', { bubbles: true });
+              field.dispatchEvent(changeEvent);
+              field.blur()
+          }
 
             // Try ID first
             let field = document.getElementById(identifier);
@@ -97,12 +121,11 @@ export async function POST(req: Request) {
             } else if (field.tagName === 'SELECT' && [...field.options].some(o => o.value === val)) {
                 const optionExists = [...field.options].some(o => o.value === val);
                 if (optionExists) {
-                    field.value = val;
-                    field.dispatchEvent(new Event('change', { bubbles: true }));
+                    reactSafeSetSelect(field, val);
                 }
             } else if (field.tagName === 'TEXTAREA') {
                 reactSafeSetValue(field, val ?? '');
-            } else if (field.type === 'text' || field.type === 'email') {
+            } else if (field.type === 'text' || field.type === 'email' || field.type==='date') {
                 reactSafeSetValue(field,val??'')
             } else {
                 reactSafeSetValue(field, val ?? '');
