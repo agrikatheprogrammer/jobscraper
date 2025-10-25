@@ -3,10 +3,20 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
 
-  const { url } = await req.json(); // get url from request json body
+  const { url, job_description } = await req.json(); // get url from request json body
   const browser = await puppeteer.launch({ headless: false }); // launch puppeteer with headless mode in false, see visible browser
   let page = (await browser.pages())[0] || await browser.newPage(); // if a tab is opened, use it, else open a new one
   await page.goto(url, { waitUntil: "networkidle0" }); // navigate open page/frame to url requested
+
+//study : React ≥16, React attaches its own synthetic event handlers and caches values.
+  function reactSafeSetValue(field, val) {
+    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        'value'
+    ).set;
+    nativeInputValueSetter.call(field, val);
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+  }
 
 
   async function exposeFunction(page:puppeteer.Page) {
@@ -18,7 +28,7 @@ export async function POST(req: Request) {
                 headers: { 
                     'Content-Type': 'application/json',
                     "Authorization": `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY}`},
-                body: JSON.stringify({html})
+                body: JSON.stringify({html, job_description})
             })
             const getaijson = await res.json();
             for (const item of getaijson) {
@@ -39,21 +49,30 @@ export async function POST(req: Request) {
 
             if (type === 'checkbox') {
                 // val should be boolean for checkbox
-                field.checked = Boolean(val);
+                const shouldBeChecked = Boolean(val);
+                if (field.checked !== shouldBeChecked) {
+                    field.click();
+                }
             } else if (type === 'radio') {
                 // for radio, select the one with matching value
                 const radios = document.querySelectorAll(`[name="${field.name}"]`);
-                radios.forEach(r => r.checked = r.value === val);
+                radios.forEach(r => {
+                    if (r.value === val) {
+                        r.checked = true;
+                        r.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
             } else if (field.tagName === 'SELECT' && [...field.options].some(o => o.value === val)) {
-                field.value = val; // select the option with this value
+                const optionExists = [...field.options].some(o => o.value === val);
+                if (optionExists) {
+                    field.value = val;
+                    field.dispatchEvent(new Event('change', { bubbles: true }));
+                }
             } else {
-                field.value = val; // text, number, etc.
+                reactSafeSetValue(field, val ?? '');
             }
-
             }, { identifier, val: item.value });
-
             }
-
         })
     } catch (err:any) {
         if (err.message.includes('already exists')) { // binding exists for page

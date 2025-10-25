@@ -10,7 +10,7 @@ import { GoogleGenerativeAI } from "npm:@google/generative-ai";
 console.log("Hello from aipply Functions!")
 
 Deno.serve(async (req) => {
-  const { html } = await req.json()
+  const { html, job_description } = await req.json()
   const data = {
     message: `Hello ${html}!`,
   }
@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
   const resumeText = Deno.env.get("RESUME") 
   const prompt = `
-      You are given an HTML page and a resume with supplemental information.
+      You are given an HTML page and a resume with supplemental information including job description.
       Using only the information provided, without making up values,
       Extract all user-facing form fields (input, select, textarea) and provide ONLY a JSON array
       in plain string/text format with:
@@ -31,6 +31,7 @@ Deno.serve(async (req) => {
       - label (if present)
       - type
       - value filled using the provided information.
+      For writing questions, use the information in resume only to connect to job requirements.
       It is crucial that the output generated is in valid JSON array format, with no extra information.
       Do NOT make up values; if you do not know the value after trying to extract from the given information,
       ignore the field and do not return it.
@@ -47,12 +48,15 @@ Deno.serve(async (req) => {
             } else {
                 field.value = val; // text, number, etc.
             }
-      and output will be parsed to JSON. Hence, ensure the string has no unnecessary quotations as well.\n
-      HTML:
-      ${html}
+      and output will be parsed to JSON. Hence, ensure the string has no unnecessary quotations as well.
       \n
       Resume text:
-      ${resumeText}
+      ${resumeText}\n
+      Job description:
+      ${job_description}
+      \n
+      HTML:
+      ${html}
     `;
 
   const result = await model.generateContent(prompt);
@@ -62,7 +66,7 @@ Deno.serve(async (req) => {
   .replace(/^```(?:json)?/i, "")   // remove opening ```json or ``` 
   .replace(/```$/, "")             // remove closing ```
   .trim();
-
+  console.log(text)
   let replyJson;
   try {
     replyJson = JSON.parse(text);
